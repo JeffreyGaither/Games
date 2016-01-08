@@ -1,7 +1,7 @@
 using UnityEngine;
 
 public abstract class Unit : MonoBehaviour {
-    public int Health;
+    public int MaxHealth;
     public int CurrentHealth;
     public int Damage;
     public float Speed;
@@ -9,6 +9,7 @@ public abstract class Unit : MonoBehaviour {
     public bool IsGrounded;
     public bool FacingRight;
     public bool Dead = false;
+    public bool wait = false;
 
     public LayerMask TheGround;
     public Transform GroundCheck;
@@ -50,5 +51,8 @@ public abstract class Unit : MonoBehaviour {
     /// </summary>
     public virtual void FixedUpdate() {
         MovementController.ClampUnit(this);
+
+        //Check whether we are on the ground or not
+        UnitController.UnitOnGround(this);
     }
 }

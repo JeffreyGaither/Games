@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class Player : Unit {
     private int coins;
@@ -21,20 +20,13 @@ public class Player : Unit {
         FacingRight = true;
 	}
 
-    /// <summary>
-    /// If the Player is disabled for some reason the 
-    /// coins and lives will be transfered to Game Manager
-    /// </summary>
-    private void OnDisable() {
-        GameManager.instance.playerCoins = coins;
-        GameManager.instance.playerLives = lives;
-    }
-
 	public override void FixedUpdate() {
         base.FixedUpdate();
 
-        //Check whether we are on the ground or not
-        UnitController.UnitOnGround(this);
+        //Check to see if the Unit needs to wait
+        if(wait) {
+            return;
+        }
 
         //TODO Add audio or something here
 
@@ -50,6 +42,15 @@ public class Player : Unit {
 
             MovementController.Jump(this);
         }
+    }
+
+    /// <summary>
+    /// If the Player is disabled for some reason the 
+    /// coins and lives will be transfered to Game Manager
+    /// </summary>
+    private void OnDisable() {
+        GameManager.instance.playerCoins = coins;
+        GameManager.instance.playerLives = lives;
     }
 
     /// <summary>
@@ -87,7 +88,7 @@ public class Player : Unit {
             Death();
         } else {
             lives -= 1;
-            CurrentHealth = Health;
+            CurrentHealth = MaxHealth;
         }
     }
 
@@ -139,21 +140,41 @@ public class Player : Unit {
     }
 
     public override void OnTriggerEnter2D(Collider2D collider) {
-        //TODO Need to use this method to figure out what the Player
-        //Does when it interacts with Items and Exits (they are called Triggers)
+        GameObject colliderGameObject = collider.gameObject;
+
+        if(colliderGameObject.tag.Equals("Item")) {
+            //The Player has collided with an Item
+            IItem item = colliderGameObject.GetComponent(colliderGameObject.name) as IItem;
+
+            //Pickup the Item
+            item.PickupAction(this.gameObject);
+
+            //Disable the Item now, since it was picked up
+            item.DisableOnPickup();
+        }
+
+        //TODO Need to figure out Exits
     }
 
     /// <summary>
     /// Will subtract coins from Player
     /// </summary>
     /// <param name="coinsLost">Amount of coins to lose</param>
-    public void LoseCoins(int coinsLost) {
+    public void SubtractCoins(int coinsLost) {
         coins -= coinsLost;
 
         //If coins are now below 0, let's set to 0
         if (coins < 0) {
             coins = 0;
         }
+    }
+
+    /// <summary>
+    /// Will add the supplied Coins
+    /// </summary>
+    /// <param name="coinsToAdd">Amount of coins to add</param>
+    public void AddCoins(int coinsToAdd) {
+        coins += coinsToAdd;
     }
 
     /// <summary>
@@ -166,6 +187,6 @@ public class Player : Unit {
     }
 
     public override void OnCollisionEnter2D(Collision2D collision) {
-        //TODO MAYBE add code to attack Enemy. Supposed to be gun.
+        
     }
 }
